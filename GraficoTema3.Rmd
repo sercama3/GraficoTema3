@@ -1,0 +1,83 @@
+---
+title: "Reproduccion grafico"
+author: "María García Rodríguez, Paula SigÜenza Cruces, Sergio Cabral Martínez"
+date: "07/03/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Cargamos las librerias necesarias.
+```{r}
+
+library(readr)
+library(ggplot2)
+library(plotly)
+library(utils)
+library(dplyr)
+library(webshot)
+
+```
+
+
+Fase de carga de los datos.
+```{r}
+rm(list = ls())
+# Descargar los datos
+url <- "https://covid.ourworldindata.org/data/owid-covid-data.csv"
+f <- read.csv(url)
+```
+
+Fase de procesamiento de datos.
+```{r}
+#Extraemos los datos por paises que necesitaremos.
+Japan <- f[f$location == "Japan", ]
+Canada <- f[f$location == "Canada", ]
+Germany <- f[f$location == "Germany", ]
+France <- f[f$location == "France", ]
+US <- f[f$location == "United States", ]
+Italy <- f[f$location == "Italy", ]
+UK <- f[f$location == "United Kingdom", ]
+Spain <- f[f$location == "Spain", ]
+
+df_paises <- rbind(Japan, Canada, Germany, France, US, Italy, UK, Spain)
+
+```
+
+Construimos el gráfico.
+```{r}
+df_paises$date <- as.Date(df_paises$date)
+
+# Crea el gráfico ggplot
+ggplot(df_paises, aes(x = date, y = new_deaths_smoothed_per_million, group = location,color = location)) +
+  geom_line() +
+  ylim(0,19)  +
+  labs(title = "New Deaths Per Million by Country",
+       y = "New Deaths Per Million") +
+  theme_minimal() +
+  # Ajustar los marcadores de fecha en el eje x
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# Crea el gráfico interactivo con plotly
+fig <- plot_ly(df_paises, x = ~date, y = ~new_deaths_smoothed_per_million, color = ~location, type = "scatter", mode = "lines") %>%
+  layout(title = "Grupo M",
+         yaxis = list(title = "New Deaths Per Million"))
+
+# Añade la línea para España en rojo y con trazo más grueso
+fig <- fig %>% add_trace(data = Spain, x = ~date, y = ~new_deaths_smoothed_per_million,
+                          type = "scatter", mode = "lines", line = list(color = "red", width = 3))
+
+# Guarda el gráfico interactivo en un archivo HTML
+htmlwidgets::saveWidget(fig, "GraficoTema3.html")
+
+
+# Guardar el gráfico en formato PDF
+orca(fig, file = "nombre_del_archivo.pdf", width = 800, height = 600)
+
+
+```
