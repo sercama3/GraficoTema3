@@ -19,6 +19,7 @@ library(plotly)
 library(utils)
 library(dplyr)
 library(webshot)
+webshot::install_phantomjs()
 
 ```
 
@@ -76,8 +77,14 @@ fig <- fig %>% add_trace(data = Spain, x = ~date, y = ~new_deaths_smoothed_per_m
 htmlwidgets::saveWidget(fig, "GraficoTema3.html")
 
 
-# Guardar el gráfico en formato PDF
-orca(fig, file = "nombre_del_archivo.pdf", width = 800, height = 600)
+# Ruta al archivo HTML
+ruta_html <- "GraficoTema3.html"
+
+# Ruta al archivo PDF de salida
+ruta_pdf <- "GraficoTema3.pdf"
+
+# Captura la página HTML y guarda como PDF
+webshot(ruta_html, file = ruta_pdf, vwidth = 800, vheight = 600)
 
 
 ```
